@@ -43,6 +43,17 @@ button.go { background:var(--brand); color:#fff; border:0; margin-top:10px; font
 a.btn { display:block; text-align:center; background:#fff; color:var(--brand); border:1px solid var(--brand); padding:11px; border-radius:12px; text-decoration:none; font-weight:700; margin:10px 0; }
 .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
 .stat { text-align:center; } .stat b { display:block; font-size:1.2rem; }
+.chart { width:100%; height:auto; display:block; margin:6px 0 2px; }
+.chart { direction:ltr; }
+.chart text { font-size:9px; fill:var(--ink2); }
+.facts { display:grid; grid-template-columns:1fr 1fr; gap:2px 14px; margin:6px 0; }
+.facts .kv { border-bottom:1px solid var(--line); }
+.flist .f { display:flex; gap:8px; padding:5px 0; border-bottom:1px solid var(--line); font-size:.86rem; }
+.flist .f .ic { width:1.2em; text-align:center; font-weight:700; }
+.flist .f.pass .ic { color:var(--good); } .flist .f.near .ic { color:var(--warn); } .flist .f.fail .ic { color:var(--bad); } .flist .f.na .ic { color:var(--ink2); }
+.flist .f small { display:block; color:var(--ink2); }
+.sec { margin:12px 0 4px; font-weight:700; font-size:.9rem; }
+.mini { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--line); }
 .stale { background:#fdecea; color:var(--bad); }
 </style>
 </head>
@@ -53,6 +64,7 @@ a.btn { display:block; text-align:center; background:#fff; color:var(--brand); b
   <nav id="nav" hidden>
     <button data-tab="board" class="on">תוצאות</button>
     <button data-tab="score">תוצאות בפועל</button>
+    <button data-tab="hist">היסטוריה</button>
     <button data-tab="more">עוד</button>
   </nav>
 </header>
@@ -114,13 +126,54 @@ function lockScreen(msg) {
 
 const fmt = (v, d = 2) => (v == null ? "—" : Number(v).toLocaleString("en-US", { maximumFractionDigits: d }));
 const symShown = (r) => (r.market === "TA" ? r.symbol.replace(/\.TA$/, "") : r.symbol);
+const fmtBig = (v) => { if (v == null) return "—"; const a = Math.abs(v); return a >= 1e12 ? fmt(v / 1e12, 2) + "T" : a >= 1e9 ? fmt(v / 1e9, 2) + "B" : a >= 1e6 ? fmt(v / 1e6, 1) + "M" : fmt(v, 0); };
+const pct = (v) => (v == null ? "—" : (v >= 0 ? "+" : "") + fmt(v, 1) + "%");
+const NS = "http://www.w3.org/2000/svg";
+function svg(tag, attrs, text) { const el = document.createElementNS(NS, tag); for (const [k, v] of Object.entries(attrs || {})) el.setAttribute(k, v); if (text != null) el.textContent = text; return el; }
+function chartSvg(c) {
+  const closes = (c && c.closes) || [];
+  if (closes.length < 3) return null;
+  const W = 340, H = 130, L = 6, R = 6, T = 8, B = 16;
+  const all = closes.concat(c.resistance != null ? [c.resistance] : []);
+  const lo = Math.min(...all), hi = Math.max(...all), span = (hi - lo) || 1;
+  const x = (i) => L + (W - L - R) * i / (closes.length - 1);
+  const y = (v) => T + (H - T - B) * (1 - (v - lo) / span);
+  const g = svg("svg", { viewBox: "0 0 " + W + " " + H, class: "chart", role: "img", "aria-label": "גרף מחיר" });
+  if (c.base_start != null && c.breakout != null && c.base_start >= 0) {
+    g.append(svg("rect", { x: x(c.base_start), y: T, width: Math.max(1, x(c.breakout) - x(c.base_start)), height: H - T - B, fill: "#1f3f9a", opacity: "0.07" }));
+  }
+  if (c.resistance != null) g.append(svg("line", { x1: L, x2: W - R, y1: y(c.resistance), y2: y(c.resistance), stroke: "#b26a00", "stroke-width": 1, "stroke-dasharray": "4 3" }));
+  g.append(svg("polyline", { points: closes.map((v, i) => x(i).toFixed(1) + "," + y(v).toFixed(1)).join(" "), fill: "none", stroke: "#1f3f9a", "stroke-width": 1.8, "stroke-linejoin": "round" }));
+  if (c.breakout != null && c.breakout >= 0 && c.breakout < closes.length) {
+    g.append(svg("line", { x1: x(c.breakout), x2: x(c.breakout), y1: T, y2: H - B, stroke: "#0e7a4f", "stroke-width": 1 }));
+    g.append(svg("circle", { cx: x(c.breakout), cy: y(closes[c.breakout]), r: 3.5, fill: "#0e7a4f", stroke: "#fff", "stroke-width": 1.5 }));
+  }
+  const d = c.dates || [];
+  if (d.length) { g.append(svg("text", { x: L, y: H - 3 }, d[0])); g.append(svg("text", { x: W - R, y: H - 3, "text-anchor": "end" }, d[d.length - 1])); }
+  return g;
+}
 function kv(a, b, cls) { return h("div", { class: "kv" }, h("span", { text: a }), h("span", { text: b, class: cls, dir: "auto" })); }
+
+function fundsBox(r) {
+  const fu = r.fundamentals || {};
+  const rows = [
+    ["שווי שוק", fu.market_cap != null ? fmtBig(fu.market_cap) : null], ["מכפיל רווח", fu.pe != null ? fmt(fu.pe, 1) : null],
+    ["מכפיל צפוי", fu.forward_pe != null ? fmt(fu.forward_pe, 1) : null], ["צמיחה בהכנסות", fu.revenue_growth != null ? pct(fu.revenue_growth) : null],
+    ["צמיחה ברווח", fu.earnings_growth != null ? pct(fu.earnings_growth) : null], ["שולי רווח נקי", fu.profit_margin != null ? pct(fu.profit_margin) : null],
+    ["חוב להון", fu.debt_to_equity != null ? "×" + fmt(fu.debt_to_equity, 2) : null], ["תשואה על ההון", fu.roe != null ? pct(fu.roe) : null],
+    ["דיבידנד", fu.dividend_yield != null ? pct(fu.dividend_yield) : null], ["בטא", fu.beta != null ? fmt(fu.beta, 2) : null],
+    ["השיא לפני הירידה", r.peak != null ? fmt(r.peak) : null], ["בדיקות של ההתנגדות", r.tests != null ? String(r.tests) : null],
+    ["ווליום בבסיס מול הרגיל", r.base_vol_ratio != null ? "×" + fmt(r.base_vol_ratio, 2) : null],
+    ["מחזור יומי ממוצע", r.turnover != null ? fmtBig(r.turnover) : null], ["דוח אחרון", r.last_earnings_date || null]].filter((x) => x[1] != null);
+  if (!rows.length) return null;
+  return h("div", {}, h("div", { class: "sec", text: "נתוני חברה" }), h("div", { class: "facts" }, rows.map(([a, b]) => kv(a, b))));
+}
 
 function stockCard(r) {
   const key = r.symbol;
   const plan = r.plan;
   const detail = h("div", { class: "detail" },
-    (r.caution && r.caution.length) ? h("div", { class: "caution" }, h("b", { text: "שים לב" }), h("ul", {}, r.caution.map((c) => h("li", { text: c })))) : null,
+    ((r.caution && r.caution.length) || r.demoted_from) ? h("div", { class: "caution" }, h("b", { text: "שים לב" }), h("ul", {}, (r.demoted_from ? [{ text: "הורדה דרגה כי השוק כולו חלש כרגע." }] : []).concat(r.caution || []).map((c) => h("li", { text: c.text || String(c) })))) : null,
     plan ? [kv("כניסה", fmt(plan.entry)), kv("סטופ", fmt(plan.stop) + " (" + fmt(plan.risk_pct, 1) + "%)", "neg"),
             kv("יעד", fmt(plan.target) + " (+" + fmt(plan.reward_pct, 1) + "%)", "pos"),
             kv("גודל פוזיציה מומלץ", plan.size_pct != null ? fmt(plan.size_pct, 0) + "% מההון" : "—")] : null,
@@ -130,8 +183,15 @@ function stockCard(r) {
     kv("בסיס", r.base_weeks != null ? r.base_weeks + " שבועות" : "—"),
     r.sector ? kv("ענף", r.sector) : null,
     r.next_earnings_date ? kv("דוח הבא", r.next_earnings_date) : null,
-    h("div", { class: "muted", style: "margin-top:6px", text: (r.filters || []).filter((f) => f.status !== "pass").map((f) => "• " + f.name + ": " + f.text).join("\n"), }));
-  detail.lastChild.style.whiteSpace = "pre-line";
+    chartSvg(r.chart),
+    h("div", { class: "muted", text: "האזור הכחול הבהיר = הבסיס · קו כתום = התנגדות · קו ירוק = יום הפריצה" }),
+    fundsBox(r),
+    h("div", { class: "sec", text: "הפילטרים" }),
+    h("div", { class: "flist" }, (r.filters || []).map((f) => {
+      const ic = { pass: "✓", near: "≈", fail: "✗", na: "–" }[f.status] || "–";
+      return h("div", { class: "f " + f.status }, h("span", { class: "ic", text: ic }),
+        h("div", {}, h("span", { text: f.name + (f.status === "near" ? " (כמעט)" : "") }), h("small", { text: f.text || "" })));
+    })));
   const card = h("div", { class: "card" + (open.has(key) ? " open" : "") });
   card.append(h("div", { class: "row", onclick: () => { open.has(key) ? open.delete(key) : open.add(key); card.classList.toggle("open"); } },
     h("div", {}, h("span", { class: "tick", text: symShown(r) }),
@@ -178,6 +238,23 @@ function scoreTab() {
   return out;
 }
 
+const openRun = new Set();
+function histTab() {
+  const hist = DATA.history || [];
+  if (!hist.length) return [h("div", { class: "card", text: "אין עדיין סריקות קודמות. הן יצטברו מהסריקה היומית." })];
+  return hist.map((run) => {
+    const card = h("div", { class: "card" + (openRun.has(run.id) ? " open" : "") });
+    const counts = DATA.tiers.map((t) => t.name + ": " + ((run.tiers || {})[String(t.id)] || 0)).join(" · ");
+    card.append(h("div", { class: "row", onclick: () => { openRun.has(run.id) ? openRun.delete(run.id) : openRun.add(run.id); card.classList.toggle("open"); } },
+      h("div", {}, h("b", { text: run.as_of || run.finished_at || "" }), h("span", { class: "name", text: counts })),
+      h("span", { class: "muted", text: String(run.rows.length) + " מניות" })),
+      h("div", { class: "detail" }, run.rows.map((r) => h("div", { class: "mini" },
+        h("div", {}, h("span", { class: "tick", text: symShown(r) }), ...(r.indices || []).map((i) => h("span", { class: "tag idx-" + i, text: LABELS[i] || i }))),
+        h("span", { class: "muted", text: (DATA.tiers.find((t) => t.id === r.tier) || {}).name + " · " + Math.round(r.score) })))));
+    return card;
+  });
+}
+
 function moreTab() {
   const out = [h("div", { class: "card" }, kv("עודכן", new Date(DATA.generated).toLocaleString("he-IL")),
     DATA.run ? kv("נכון לתאריך", DATA.run.as_of || "—") : null, kv("גרסה", DATA.version))];
@@ -190,7 +267,7 @@ function moreTab() {
 function render() {
   $("sub").textContent = DATA.run ? "נכון ל-" + (DATA.run.as_of || "") : "אין סריקה";
   for (const b of document.querySelectorAll("nav button")) b.classList.toggle("on", b.dataset.tab === TAB);
-  app.replaceChildren(...({ board, score: scoreTab, more: moreTab }[TAB])());
+  app.replaceChildren(...({ board, score: scoreTab, hist: histTab, more: moreTab }[TAB])());
 }
 for (const b of document.querySelectorAll("nav button")) b.addEventListener("click", () => { TAB = b.dataset.tab; window.scrollTo(0, 0); render(); });
 
