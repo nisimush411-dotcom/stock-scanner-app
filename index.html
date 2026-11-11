@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f3f9a">
+<meta name="robots" content="noindex">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>סורק מניות</title>
+<style>
+:root { --bg:#f4f6fb; --card:#fff; --ink:#172033; --ink2:#5a6480; --line:#e1e5ef; --brand:#1f3f9a; --good:#0e7a4f; --warn:#b26a00; --bad:#b3261e; }
+* { box-sizing: border-box; }
+body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.45 system-ui,-apple-system,"Segoe UI",Arial,sans-serif; padding-bottom:env(safe-area-inset-bottom); }
+header { background:var(--brand); color:#fff; padding:14px 16px calc(10px); position:sticky; top:0; z-index:5; }
+header h1 { margin:0; font-size:1.15rem; }
+header .sub { font-size:.8rem; opacity:.85; }
+nav { display:flex; gap:6px; margin-top:10px; }
+nav button { flex:1; border:0; padding:8px 4px; border-radius:10px; background:rgba(255,255,255,.15); color:#fff; font:inherit; font-size:.9rem; }
+nav button.on { background:#fff; color:var(--brand); font-weight:700; }
+main { padding:12px; max-width:720px; margin:0 auto; }
+.card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:12px 14px; margin-bottom:10px; }
+.row { display:flex; align-items:center; justify-content:space-between; gap:8px; cursor:pointer; }
+.tick { font-weight:700; font-size:1.1rem; direction:ltr; display:inline-block; }
+.name { color:var(--ink2); font-size:.82rem; display:block; max-width:60vw; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.score { font-weight:800; font-size:1.25rem; color:var(--brand); }
+.tag { display:inline-block; font-size:.68rem; font-weight:600; padding:1px 7px; border-radius:999px; margin-inline-start:4px; background:#e9eaee; color:#444a5a; }
+.idx-sp500{background:#e3ecff;color:#1f3f9a}.idx-sp400{background:#e0f4ee;color:#0e6b52}.idx-sp600{background:#fdf0d8;color:#8a5a00}
+.idx-ta35{background:#efe3fb;color:#5b2a91}.idx-ta90{background:#fbe3ee;color:#9a2458}.idx-ta125{background:#e9eaee;color:#444a5a}
+.tag.new{background:#d8f3e6;color:var(--good)}
+h2 { font-size:1rem; margin:16px 4px 8px; color:var(--ink2); }
+.detail { display:none; margin-top:10px; border-top:1px solid var(--line); padding-top:10px; font-size:.92rem; }
+.open .detail { display:block; }
+.kv { display:flex; justify-content:space-between; padding:3px 0; }
+.kv span:first-child { color:var(--ink2); }
+.caution { background:#fff4e0; border:1px solid #f0d9a6; border-radius:10px; padding:8px 10px; margin:8px 0; color:#7a4b00; font-size:.88rem; }
+.caution ul { margin:4px 0 0; padding-inline-start:18px; }
+.muted { color:var(--ink2); font-size:.85rem; }
+.pos { color:var(--good); } .neg { color:var(--bad); }
+input, button.go { font:inherit; padding:12px; border-radius:12px; border:1px solid var(--line); width:100%; }
+button.go { background:var(--brand); color:#fff; border:0; margin-top:10px; font-weight:700; }
+a.btn { display:block; text-align:center; background:#fff; color:var(--brand); border:1px solid var(--brand); padding:11px; border-radius:12px; text-decoration:none; font-weight:700; margin:10px 0; }
+.stats { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+.stat { text-align:center; } .stat b { display:block; font-size:1.2rem; }
+.stale { background:#fdecea; color:var(--bad); }
+</style>
+</head>
+<body>
+<header>
+  <h1>סורק מניות</h1>
+  <div class="sub" id="sub">נעול</div>
+  <nav id="nav" hidden>
+    <button data-tab="board" class="on">תוצאות</button>
+    <button data-tab="score">תוצאות בפועל</button>
+    <button data-tab="more">עוד</button>
+  </nav>
+</header>
+<main id="app"></main>
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+const app = $("app");
+const LABELS = { sp500: "S&P 500", sp400: "S&P 400", sp600: "S&P 600", ta35: "ת״א-35", ta90: "ת״א-90", ta125: "ת״א-125" };
+let DATA = null, TAB = "board";
+const open = new Set();
+
+function h(tag, attrs, ...kids) {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (v == null || v === false) continue;
+    if (k === "text") el.textContent = v;
+    else if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
+    else el.setAttribute(k, v);
+  }
+  for (const kid of kids.flat()) if (kid != null) el.append(kid);
+  return el;
+}
+const b64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+const store = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+                set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} },
+                del(k) { try { localStorage.removeItem(k); } catch (e) {} } };
+
+async function decrypt(blob, pass) {
+  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(pass), "PBKDF2", false, ["deriveKey"]);
+  const key = await crypto.subtle.deriveKey({ name: "PBKDF2", salt: b64(blob.salt), iterations: blob.iter, hash: "SHA-256" },
+    base, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+  const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64(blob.iv) }, key, b64(blob.ct));
+  return JSON.parse(new TextDecoder().decode(plain));
+}
+
+async function unlock(pass, remember) {
+  const res = await fetch("data.enc.json", { cache: "no-store" });
+  if (!res.ok) throw new Error("אין נתונים להצגה כרגע. בדוק חיבור לאינטרנט או שהסריקה הראשונה עוד לא רצה.");
+  let data;
+  try { data = await decrypt(await res.json(), pass); } catch (e) { throw new Error("הסיסמה שגויה."); }
+  if (remember) store.set("pass", pass);
+  DATA = data;
+  $("nav").hidden = false;
+  render();
+}
+
+function lockScreen(msg) {
+  $("nav").hidden = true; $("sub").textContent = "נעול";
+  const input = h("input", { type: "password", placeholder: "סיסמה", autocomplete: "current-password" });
+  const err = h("p", { class: "neg", text: msg || "" });
+  const go = h("button", { class: "go", text: "פתח", onclick: async () => {
+    go.disabled = true; err.textContent = "";
+    try { await unlock(input.value, true); } catch (e) { err.textContent = e.message; go.disabled = false; }
+  } });
+  input.addEventListener("keydown", (e) => { if (e.key === "Enter") go.click(); });
+  app.replaceChildren(h("div", { class: "card" }, h("p", { text: "הכנס את הסיסמה שהגדרת להצגת התוצאות." }), input, go, err));
+}
+
+const fmt = (v, d = 2) => (v == null ? "—" : Number(v).toLocaleString("en-US", { maximumFractionDigits: d }));
+const symShown = (r) => (r.market === "TA" ? r.symbol.replace(/\.TA$/, "") : r.symbol);
+function kv(a, b, cls) { return h("div", { class: "kv" }, h("span", { text: a }), h("span", { text: b, class: cls, dir: "auto" })); }
+
+function stockCard(r) {
+  const key = r.symbol;
+  const plan = r.plan;
+  const detail = h("div", { class: "detail" },
+    (r.caution && r.caution.length) ? h("div", { class: "caution" }, h("b", { text: "שים לב" }), h("ul", {}, r.caution.map((c) => h("li", { text: c })))) : null,
+    plan ? [kv("כניסה", fmt(plan.entry)), kv("סטופ", fmt(plan.stop) + " (" + fmt(plan.risk_pct, 1) + "%)", "neg"),
+            kv("יעד", fmt(plan.target) + " (+" + fmt(plan.reward_pct, 1) + "%)", "pos"),
+            kv("גודל פוזיציה מומלץ", plan.size_pct != null ? fmt(plan.size_pct, 0) + "% מההון" : "—")] : null,
+    kv("פריצה", (r.breakout_date || "—") + " · " + fmt(r.breakout_pct, 1) + "% מעל ההתנגדות"),
+    kv("עכשיו מול ההתנגדות", fmt(r.now_pct, 1) + "%"),
+    kv("יחס ווליום", r.vol_ratio != null ? "×" + fmt(r.vol_ratio, 1) : "—"),
+    kv("בסיס", r.base_weeks != null ? r.base_weeks + " שבועות" : "—"),
+    r.sector ? kv("ענף", r.sector) : null,
+    r.next_earnings_date ? kv("דוח הבא", r.next_earnings_date) : null,
+    h("div", { class: "muted", style: "margin-top:6px", text: (r.filters || []).filter((f) => f.status !== "pass").map((f) => "• " + f.name + ": " + f.text).join("\n"), }));
+  detail.lastChild.style.whiteSpace = "pre-line";
+  const card = h("div", { class: "card" + (open.has(key) ? " open" : "") });
+  card.append(h("div", { class: "row", onclick: () => { open.has(key) ? open.delete(key) : open.add(key); card.classList.toggle("open"); } },
+    h("div", {}, h("span", { class: "tick", text: symShown(r) }),
+      ...(r.indices || []).map((i) => h("span", { class: "tag idx-" + i, text: LABELS[i] || i })),
+      r.is_new ? h("span", { class: "tag new", text: "חדש" }) : null,
+      r.name ? h("span", { class: "name", text: r.name }) : null),
+    h("div", { class: "score", text: String(Math.round(r.score)) })), detail);
+  return card;
+}
+
+function board() {
+  const run = DATA.run;
+  const out = [];
+  if (!run) return [h("div", { class: "card", text: "עדיין אין סריקה. הרץ סריקה ראשונה ב-GitHub." })];
+  const age = Math.floor((Date.now() - Date.parse(DATA.generated)) / 3600000);
+  if (age > 72) out.push(h("div", { class: "card stale", text: "הנתונים ישנים (" + Math.floor(age / 24) + " ימים). בדוק שהסריקה בענן רצה." }));
+  for (const t of DATA.tiers) {
+    const rows = DATA.rows.filter((r) => r.tier === t.id);
+    if (!rows.length) continue;
+    out.push(h("h2", { text: t.name + " (" + rows.length + ")" }), ...rows.map(stockCard));
+  }
+  if (out.length === 0 || !DATA.rows.length) out.push(h("div", { class: "card", text: "הסריקה האחרונה לא מצאה מניות מתאימות." }));
+  return out;
+}
+
+function scoreTab() {
+  const sb = DATA.scoreboard;
+  if (!sb) return [h("div", { class: "card", text: "אין עדיין נתוני מעקב." })];
+  const o = sb.overall || {};
+  const ST = { open: "פתוחה", target: "הגיעה ליעד", stop: "נפגעה בסטופ", expired: "פגה" };
+  const out = [h("div", { class: "card" }, h("div", { class: "stats" },
+    h("div", { class: "stat" }, h("b", { text: String(o.closed ?? "—") }), h("span", { class: "muted", text: "עסקאות שנסגרו" })),
+    h("div", { class: "stat" }, h("b", { text: o.win_rate != null ? fmt(o.win_rate, 0) + "%" : "—" }), h("span", { class: "muted", text: "הצלחה" })),
+    h("div", { class: "stat" }, h("b", { text: o.avg_result != null ? fmt(o.avg_result, 1) + "%" : "—" }), h("span", { class: "muted", text: "ממוצע לעסקה" }))),
+    h("p", { class: "muted", text: sb.log_ok === false ? "אזהרה: יומן המעקב נראה שונה מהמקור." : "יומן המעקב תקין (" + (sb.log_count || 0) + " רשומות)." }))];
+  out.push(h("h2", { text: "עסקאות אחרונות" }));
+  for (const t of sb.recent || []) {
+    const closed = t.status !== "open";
+    const v = closed ? t.result_pct : (t.last_close && t.entry ? (t.last_close / t.entry - 1) * 100 : null);
+    out.push(h("div", { class: "card" }, h("div", { class: "row" },
+      h("div", {}, h("span", { class: "tick", text: symShown(t) }), h("span", { class: "name", text: (t.signal_date || "") + " · " + (ST[t.status] || t.status) })),
+      h("div", { class: "score " + ((v || 0) >= 0 ? "pos" : "neg"), text: v != null ? (v >= 0 ? "+" : "") + fmt(v, 1) + "%" : "—" }))));
+  }
+  return out;
+}
+
+function moreTab() {
+  const out = [h("div", { class: "card" }, kv("עודכן", new Date(DATA.generated).toLocaleString("he-IL")),
+    DATA.run ? kv("נכון לתאריך", DATA.run.as_of || "—") : null, kv("גרסה", DATA.version))];
+  if (DATA.actions_url) out.push(h("a", { class: "btn", href: DATA.actions_url, target: "_blank", rel: "noopener", text: "הפעל סריקה עכשיו (נפתח ב-GitHub)" }));
+  out.push(h("button", { class: "go", text: "נעל ושכח סיסמה", onclick: () => { store.del("pass"); DATA = null; lockScreen(); } }));
+  out.push(h("p", { class: "muted", text: "התוצאות הן סימון טכני בלבד ואינן ייעוץ השקעות." }));
+  return out;
+}
+
+function render() {
+  $("sub").textContent = DATA.run ? "נכון ל-" + (DATA.run.as_of || "") : "אין סריקה";
+  for (const b of document.querySelectorAll("nav button")) b.classList.toggle("on", b.dataset.tab === TAB);
+  app.replaceChildren(...({ board, score: scoreTab, more: moreTab }[TAB])());
+}
+for (const b of document.querySelectorAll("nav button")) b.addEventListener("click", () => { TAB = b.dataset.tab; window.scrollTo(0, 0); render(); });
+
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+(async () => {
+  const saved = store.get("pass");
+  if (saved) { try { await unlock(saved, false); return; } catch (e) { lockScreen(e.message === "הסיסמה שגויה." ? e.message : ""); return; } }
+  lockScreen();
+})();
+</script>
+</body>
+</html>
