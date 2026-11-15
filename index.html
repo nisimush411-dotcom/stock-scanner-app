@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#1f3f9a">
+<meta name="theme-color" content="#0e1116">
 <meta name="robots" content="noindex">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>סורק מניות</title>
+<title>YAIR TRADE</title>
 <style>
 :root { --bg:#f4f6fb; --card:#fff; --ink:#172033; --ink2:#5a6480; --line:#e1e5ef; --brand:#1f3f9a; --good:#0e7a4f; --warn:#b26a00; --bad:#b3261e; }
 * { box-sizing: border-box; }
@@ -28,6 +28,7 @@ main { padding:12px; max-width:720px; margin:0 auto; }
 .tag { display:inline-block; font-size:.68rem; font-weight:600; padding:1px 7px; border-radius:999px; margin-inline-start:4px; background:#e9eaee; color:#444a5a; }
 .idx-sp500{background:#e3ecff;color:#1f3f9a}.idx-sp400{background:#e0f4ee;color:#0e6b52}.idx-sp600{background:#fdf0d8;color:#8a5a00}
 .idx-ta35{background:#efe3fb;color:#5b2a91}.idx-ta90{background:#fbe3ee;color:#9a2458}.idx-ta125{background:#e9eaee;color:#444a5a}
+.tag.ver-ok{background:#d8f3e6;color:var(--good)}.tag.ver-mismatch{background:#fdecea;color:var(--bad)}
 .tag.new{background:#d8f3e6;color:var(--good)}
 h2 { font-size:1rem; margin:16px 4px 8px; color:var(--ink2); }
 .detail { display:none; margin-top:10px; border-top:1px solid var(--line); padding-top:10px; font-size:.92rem; }
@@ -45,7 +46,7 @@ a.btn { display:block; text-align:center; background:#fff; color:var(--brand); b
 .stat { text-align:center; } .stat b { display:block; font-size:1.2rem; }
 .chart { width:100%; height:auto; display:block; margin:6px 0 2px; }
 .chart { direction:ltr; }
-.chart text { font-size:9px; fill:var(--ink2); }
+.chart text { font-size:10px; fill:var(--ink2); }
 .facts { display:grid; grid-template-columns:1fr 1fr; gap:2px 14px; margin:6px 0; }
 .facts .kv { border-bottom:1px solid var(--line); }
 .flist .f { display:flex; gap:8px; padding:5px 0; border-bottom:1px solid var(--line); font-size:.86rem; }
@@ -54,13 +55,37 @@ a.btn { display:block; text-align:center; background:#fff; color:var(--brand); b
 .flist .f small { display:block; color:var(--ink2); }
 .sec { margin:12px 0 4px; font-weight:700; font-size:.9rem; }
 .mini { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--line); }
+.evalbar { height: 6px; border-radius: 4px; background: var(--line); overflow: hidden; margin: 6px 0; }
+.evalbar i { display: block; height: 100%; border-radius: 4px; }
 .stale { background:#fdecea; color:var(--bad); }
+
+/* ---- YAIR TRADE look: black and gold at night, warm ivory by day (follows the phone's setting) ---- */
+:root { --bg:#0e1116; --card:#171c25; --ink:#ece6d8; --ink2:#a39b88; --line:#2a2f3a; --brand:#c9a55c; --gold-hi:#ebd299; --good:#58c28f; --warn:#e0a84a; --bad:#e0766a; color-scheme: dark; }
+@media (prefers-color-scheme: light) { :root { --bg:#f6f1e6; --card:#fffdf8; --ink:#2a2418; --ink2:#7a705c; --line:#e6dcc4; --brand:#8a6a2f; --gold-hi:#8a6a2f; --good:#1f7a55; --warn:#9a6212; --bad:#b3382c; color-scheme: light; } }
+body { font-family: system-ui,-apple-system,"Segoe UI",Arial,sans-serif; }
+header { background:linear-gradient(180deg,#05070a,#0e1116); color:var(--gold-hi); border-bottom:1px solid var(--line); }
+@media (prefers-color-scheme: light) { header { background:linear-gradient(180deg,#fffdf8,#f6f1e6); } }
+.brandrow { display:flex; align-items:center; gap:10px; }
+header h1 { font-family: Palatino,"Palatino Linotype","Book Antiqua",Georgia,serif; letter-spacing:.26em; font-weight:500; font-size:1.05rem; color:var(--gold-hi); }
+header .sub { color:var(--ink2); opacity:1; }
+nav button { background:transparent; color:var(--ink2); border:1px solid var(--line); }
+nav button.on { background:linear-gradient(135deg,#a5803a,#ebd299 45%,#b38a3c); color:#1a1408; border-color:transparent; }
+.card { border-radius:16px; box-shadow:0 8px 24px rgba(0,0,0,.18); }
+.score { color:var(--gold-hi); font-family: Palatino,Georgia,serif; }
+.tag { background:#262b36; color:var(--ink2); }
+.idx-sp500,.idx-sp400,.idx-sp600,.idx-ta35,.idx-ta90,.idx-ta125 { background:#2a2f3a; color:var(--gold-hi); }
+.tag.ver-ok,.tag.new { background:rgba(88,194,143,.16); color:var(--good); } .tag.ver-mismatch { background:rgba(224,118,106,.16); color:var(--bad); }
+.caution { background:rgba(224,168,74,.1); border-color:rgba(224,168,74,.35); color:var(--warn); }
+input, button.go { background:var(--card); color:var(--ink); }
+button.go { background:linear-gradient(135deg,#a5803a,#ebd299 45%,#b38a3c); color:#1a1408; }
+a.btn { background:transparent; color:var(--gold-hi); border-color:var(--brand); }
+.chart text { fill:var(--ink2); }
+.stale { background:rgba(224,118,106,.14); }
 </style>
 </head>
 <body>
 <header>
-  <h1>סורק מניות</h1>
-  <div class="sub" id="sub">נעול</div>
+  <div class="brandrow"><svg class="mark" width="34" height="34" viewBox="0 0 100 100" aria-hidden="true"><defs><linearGradient id="ytg-c" gradientUnits="userSpaceOnUse" x1="10" y1="8" x2="90" y2="92"><stop offset="0" stop-color="#8A6A2F"/><stop offset=".38" stop-color="#EBD299"/><stop offset=".62" stop-color="#B38A3C"/><stop offset="1" stop-color="#F2E0A8"/></linearGradient></defs><g fill="none" stroke="url(#ytg-c)"><circle cx="50" cy="50" r="46" stroke-width="1.4" pathLength="1" class="d d1"/><circle cx="50" cy="50" r="41.5" stroke-width=".6" opacity=".5" pathLength="1" class="d d2"/><path d="M28 30H72" stroke-width="3" pathLength="1" class="d d3"/><path d="M28 26.5V33.5M72 26.5V33.5" stroke-width="1" pathLength="1" class="d d4"/><path d="M37 37L50 54" stroke-width="1.2" pathLength="1" class="d d5"/><path d="M63 37L50 54" stroke-width="3.4" pathLength="1" class="d d5"/><path d="M50 54V74" stroke-width="3.4" pathLength="1" class="d d6"/><path d="M44 74H56M31.5 37H42.5M57.5 37H68.5" stroke-width="1" pathLength="1" class="d d7"/></g></svg><div><h1>YAIR TRADE</h1><div class="sub" id="sub">נעול</div></div></div>
   <nav id="nav" hidden>
     <button data-tab="board" class="on">תוצאות</button>
     <button data-tab="score">תוצאות בפועל</button>
@@ -133,21 +158,74 @@ function svg(tag, attrs, text) { const el = document.createElementNS(NS, tag); f
 function chartSvg(c) {
   const closes = (c && c.closes) || [];
   if (closes.length < 3) return null;
-  const W = 340, H = 130, L = 6, R = 6, T = 8, B = 16;
-  const all = closes.concat(c.resistance != null ? [c.resistance] : []);
-  const lo = Math.min(...all), hi = Math.max(...all), span = (hi - lo) || 1;
-  const x = (i) => L + (W - L - R) * i / (closes.length - 1);
-  const y = (v) => T + (H - T - B) * (1 - (v - lo) / span);
-  const g = svg("svg", { viewBox: "0 0 " + W + " " + H, class: "chart", role: "img", "aria-label": "גרף מחיר" });
+  const n = closes.length, d = c.dates || [];
+  const ohlc = !!(c.open && c.high && c.low && c.open.length === n && c.high.length === n && c.low.length === n);
+  const hasVol = !!(c.volume && c.volume.length === n);
+  const W = 340, L = 4, R = 40, T = 14, PB = 150, VT = 156, VB = hasVol ? 186 : 150, H = VB + 28;
+  const hi0 = ohlc ? c.high : closes, lo0 = ohlc ? c.low : closes;
+  let lo = Math.min(...lo0, c.resistance != null ? c.resistance : Infinity), hi = Math.max(...hi0, c.resistance != null ? c.resistance : -Infinity);
+  const m = (hi - lo) * 0.04 || hi * 0.02; lo -= m; hi += m;
+  const slot = (W - L - R) / n, x = (i) => L + (i + 0.5) * slot, y = (v) => T + (PB - T) * (1 - (v - lo) / (hi - lo));
+  const g = svg("svg", { viewBox: "0 0 " + W + " " + H, class: "chart", role: "img", "aria-label": "גרף מחיר, " + n + " ימי מסחר" + (d.length ? " מ-" + d[0] + " עד " + d[n - 1] : "") });
+  // price grid
+  const span = hi - lo, raw = span / 4, pw = Math.pow(10, Math.floor(Math.log10(raw))), fr = raw / pw, step = (fr < 1.5 ? 1 : fr < 3 ? 2 : fr < 7 ? 5 : 10) * pw;
+  for (let v = Math.ceil(lo / step) * step; v <= hi; v += step) {
+    g.append(svg("line", { x1: L, x2: W - R, y1: y(v), y2: y(v), stroke: "#d8d3c4", "stroke-width": 0.6 }));
+    g.append(svg("text", { x: W - R + 4, y: y(v) + 3 }, fmt(v, step < 1 ? 2 : 0)));
+  }
+  // month ticks
+  let lastX = -99, prevYear = null;
+  for (let i = 0; i < n && d.length; i++) {
+    const p = d[i].split("-");
+    if (i > 0 && p[1] === d[i - 1].split("-")[1]) continue;
+    if (x(i) - lastX < 34) continue;
+    lastX = x(i);
+    g.append(svg("line", { x1: x(i), x2: x(i), y1: T, y2: VB, stroke: "#d8d3c4", "stroke-width": 0.5, "stroke-dasharray": "2 3" }));
+    const anchor = x(i) < L + 14 ? "start" : "middle";
+    g.append(svg("text", { x: x(i), y: VB + 11, "text-anchor": anchor }, p[2] + "/" + p[1]));
+    if (p[0] !== prevYear) g.append(svg("text", { x: x(i), y: VB + 22, "text-anchor": anchor, opacity: 0.7 }, p[0]));
+    prevYear = p[0];
+  }
   if (c.base_start != null && c.breakout != null && c.base_start >= 0) {
-    g.append(svg("rect", { x: x(c.base_start), y: T, width: Math.max(1, x(c.breakout) - x(c.base_start)), height: H - T - B, fill: "#1f3f9a", opacity: "0.07" }));
+    g.append(svg("rect", { x: x(c.base_start) - slot / 2, y: T, width: Math.max(1, x(c.breakout) - x(c.base_start)), height: PB - T, fill: "#c9a55c", opacity: "0.14" }));
   }
-  if (c.resistance != null) g.append(svg("line", { x1: L, x2: W - R, y1: y(c.resistance), y2: y(c.resistance), stroke: "#b26a00", "stroke-width": 1, "stroke-dasharray": "4 3" }));
-  g.append(svg("polyline", { points: closes.map((v, i) => x(i).toFixed(1) + "," + y(v).toFixed(1)).join(" "), fill: "none", stroke: "#1f3f9a", "stroke-width": 1.8, "stroke-linejoin": "round" }));
-  if (c.breakout != null && c.breakout >= 0 && c.breakout < closes.length) {
-    g.append(svg("line", { x1: x(c.breakout), x2: x(c.breakout), y1: T, y2: H - B, stroke: "#0e7a4f", "stroke-width": 1 }));
-    g.append(svg("circle", { cx: x(c.breakout), cy: y(closes[c.breakout]), r: 3.5, fill: "#0e7a4f", stroke: "#fff", "stroke-width": 1.5 }));
+  if (c.resistance != null) {
+    g.append(svg("line", { x1: L, x2: W - R, y1: y(c.resistance), y2: y(c.resistance), stroke: "#a8823a", "stroke-width": 1.1, "stroke-dasharray": "4 3" }));
   }
+  if (ohlc) {
+    const bw = Math.max(1.2, Math.min(6, slot * 0.64));
+    for (let i = 0; i < n; i++) {
+      const up = closes[i] >= c.open[i], col = up ? "#0e7a4f" : "#b3261e";
+      g.append(svg("line", { x1: x(i), x2: x(i), y1: y(c.high[i]), y2: y(c.low[i]), stroke: col, "stroke-width": 1 }));
+      const top = y(Math.max(c.open[i], closes[i]));
+      g.append(svg("rect", { x: x(i) - bw / 2, y: top, width: bw, height: Math.max(1, y(Math.min(c.open[i], closes[i])) - top), fill: col }));
+    }
+  } else {
+    g.append(svg("polyline", { points: closes.map((v, i) => x(i).toFixed(1) + "," + y(v).toFixed(1)).join(" "), fill: "none", stroke: "#4a4536", "stroke-width": 1.6, "stroke-linejoin": "round" }));
+  }
+  if (hasVol) {
+    const mv = Math.max(...c.volume, 1);
+    for (let i = 0; i < n; i++) {
+      const up = !ohlc || closes[i] >= c.open[i], h2 = Math.max(0.5, (c.volume[i] / mv) * (VB - VT));
+      g.append(svg("rect", { x: x(i) - Math.max(0.8, slot * 0.32), y: VB - h2, width: Math.max(1.2, slot * 0.64), height: h2, fill: up ? "#0e7a4f" : "#b3261e", opacity: i === c.breakout ? 1 : 0.45 }));
+    }
+    g.append(svg("text", { x: L + 2, y: VT + 8 }, "נפח"));
+  }
+  if (c.breakout != null && c.breakout >= 0 && c.breakout < n) {
+    g.append(svg("line", { x1: x(c.breakout), x2: x(c.breakout), y1: T - 4, y2: VB, stroke: "#a8823a", "stroke-width": 1, "stroke-dasharray": "2 2" }));
+  }
+  g.append(svg("line", { x1: L, x2: W - R, y1: y(closes[n - 1]), y2: y(closes[n - 1]), stroke: "#4a4536", "stroke-width": 0.8, "stroke-dasharray": "1 3" }));
+  g.append(svg("text", { x: W - R + 4, y: y(closes[n - 1]) + 3, "font-weight": 700, style: "fill:#17130a" }, fmt(closes[n - 1], 2)));
+  return g;
+}
+function trendSvg(tr) {
+  const c = tr && tr.chart, closes = (c && c.closes) || [];
+  if (closes.length < 3) return null;
+  const W = 340, H = 80, L = 6, R = 6, T = 6, B = 14;
+  const lo = Math.min(...closes), hi = Math.max(...closes), span = (hi - lo) || 1;
+  const x = (i) => L + (W - L - R) * i / (closes.length - 1), y = (v) => T + (H - T - B) * (1 - (v - lo) / span);
+  const g = svg("svg", { viewBox: "0 0 " + W + " " + H, class: "chart", role: "img", "aria-label": "גרף מגמה ראשית" });
+  g.append(svg("polyline", { points: closes.map((v, i) => x(i).toFixed(1) + "," + y(v).toFixed(1)).join(" "), fill: "none", stroke: tr.pct >= 0 ? "#0e7a4f" : "#b3261e", "stroke-width": 1.5, "stroke-linejoin": "round" }));
   const d = c.dates || [];
   if (d.length) { g.append(svg("text", { x: L, y: H - 3 }, d[0])); g.append(svg("text", { x: W - R, y: H - 3, "text-anchor": "end" }, d[d.length - 1])); }
   return g;
@@ -162,7 +240,7 @@ function fundsBox(r) {
     ["צמיחה ברווח", fu.earnings_growth != null ? pct(fu.earnings_growth) : null], ["שולי רווח נקי", fu.profit_margin != null ? pct(fu.profit_margin) : null],
     ["חוב להון", fu.debt_to_equity != null ? "×" + fmt(fu.debt_to_equity, 2) : null], ["תשואה על ההון", fu.roe != null ? pct(fu.roe) : null],
     ["דיבידנד", fu.dividend_yield != null ? pct(fu.dividend_yield) : null], ["בטא", fu.beta != null ? fmt(fu.beta, 2) : null],
-    ["השיא לפני הירידה", r.peak != null ? fmt(r.peak) : null], ["בדיקות של ההתנגדות", r.tests != null ? String(r.tests) : null],
+    ["השיא לפני הירידה", r.peak != null ? fmt(r.peak) : null], ["נגיעות נפרדות בהתנגדות", r.tests != null ? String(r.tests) : null],
     ["ווליום בבסיס מול הרגיל", r.base_vol_ratio != null ? "×" + fmt(r.base_vol_ratio, 2) : null],
     ["מחזור יומי ממוצע", r.turnover != null ? fmtBig(r.turnover) : null], ["דוח אחרון", r.last_earnings_date || null]].filter((x) => x[1] != null);
   if (!rows.length) return null;
@@ -177,6 +255,7 @@ function stockCard(r) {
     plan ? [kv("כניסה", fmt(plan.entry)), kv("סטופ", fmt(plan.stop) + " (" + fmt(plan.risk_pct, 1) + "%)", "neg"),
             kv("יעד", fmt(plan.target) + " (+" + fmt(plan.reward_pct, 1) + "%)", "pos"),
             kv("גודל פוזיציה מומלץ", plan.size_pct != null ? fmt(plan.size_pct, 0) + "% מההון" : "—")] : null,
+    r.verified ? kv("אימות מחיר", r.verified.text, r.verified.status === "mismatch" ? "neg" : "") : null,
     kv("פריצה", (r.breakout_date || "—") + " · " + fmt(r.breakout_pct, 1) + "% מעל ההתנגדות"),
     kv("עכשיו מול ההתנגדות", fmt(r.now_pct, 1) + "%"),
     kv("יחס ווליום", r.vol_ratio != null ? "×" + fmt(r.vol_ratio, 1) : "—"),
@@ -184,7 +263,9 @@ function stockCard(r) {
     r.sector ? kv("ענף", r.sector) : null,
     r.next_earnings_date ? kv("דוח הבא", r.next_earnings_date) : null,
     chartSvg(r.chart),
-    h("div", { class: "muted", text: "האזור הכחול הבהיר = הבסיס · קו כתום = התנגדות · קו ירוק = יום הפריצה" }),
+    h("div", { class: "muted", text: "כל נר = יום מסחר (ירוק עלה, אדום ירד) · אזור זהב = הבסיס · קו מקווקו = התנגדות · קו אנכי = יום הפריצה · למטה: נפח" + (r.chart && r.chart.source ? " · מקור: " + r.chart.source : "") }),
+    r.trend ? h("div", { class: "muted", text: "מגמה ראשית ב-" + r.trend.years + " שנים: קו המגמה " + (r.trend.pct >= 0 ? "עלה " : "ירד ") + Math.abs(r.trend.pct).toFixed(0) + "%" }) : null,
+    r.trend ? trendSvg(r.trend) : null,
     fundsBox(r),
     h("div", { class: "sec", text: "הפילטרים" }),
     h("div", { class: "flist" }, (r.filters || []).map((f) => {
@@ -196,9 +277,10 @@ function stockCard(r) {
   card.append(h("div", { class: "row", onclick: () => { open.has(key) ? open.delete(key) : open.add(key); card.classList.toggle("open"); } },
     h("div", {}, h("span", { class: "tick", text: symShown(r) }),
       ...(r.indices || []).map((i) => h("span", { class: "tag idx-" + i, text: LABELS[i] || i })),
+      r.verified && r.verified.status !== "unverified" ? h("span", { class: "tag ver-" + r.verified.status, text: r.verified.status === "ok" ? "✓ אומת" : "⚠ לא תואם" }) : null,
       r.is_new ? h("span", { class: "tag new", text: "חדש" }) : null,
       r.name ? h("span", { class: "name", text: r.name }) : null),
-    h("div", { class: "score", text: String(Math.round(r.score)) })), detail);
+    h("div", { class: "score", text: String(Math.floor(r.score + 1e-9)) })), detail);
   return card;
 }
 
@@ -227,6 +309,26 @@ function scoreTab() {
     h("div", { class: "stat" }, h("b", { text: o.win_rate != null ? fmt(o.win_rate, 0) + "%" : "—" }), h("span", { class: "muted", text: "הצלחה" })),
     h("div", { class: "stat" }, h("b", { text: o.avg_result != null ? fmt(o.avg_result, 1) + "%" : "—" }), h("span", { class: "muted", text: "ממוצע לעסקה" }))),
     h("p", { class: "muted", text: sb.log_ok === false ? "אזהרה: יומן המעקב נראה שונה מהמקור." : "יומן המעקב תקין (" + (sb.log_count || 0) + " רשומות)." }))];
+  const ev = DATA.evaluate;
+  if (ev && ev.enabled && ev.tiers && ev.tiers.length) {
+    out.push(h("h2", { text: "תחזית קדימה: האם המניות שנבחרו באמת זזו" }));
+    out.push(h("p", { class: "muted", text: "בדיקה נפרדת: גם איתות שנעצר בסטופ נבדק האם בכל זאת עלה " + ev.target_pct + "% בשבוע-שבועיים הראשונים." }));
+    for (const t of ev.tiers) {
+      const w5 = t.window5;
+      const card = h("div", { class: "card" }, h("div", { class: "row" },
+        h("div", {}, h("b", { text: t.name }),
+          h("span", { class: "name", text: w5.sample ? "מתוך " + w5.sample + " איתותים" : "אין עדיין מספיק איתותים" })),
+        h("div", { class: "score", text: w5.hit_rate == null ? "—" : w5.hit_rate + "%" })));
+      if (w5.hit_rate != null) card.append(h("div", { class: "evalbar" }, h("i", { style: "width:" + Math.max(2, w5.hit_rate) + "%; background:" + (t.needs_attention ? "var(--bad)" : "var(--good)") })));
+      if (t.findings && t.findings.length) {
+        card.append(h("div", { class: "caution" }, h("b", { text: "מה מבדיל בין אלה שזזו לאלה שלא" }),
+          h("ul", {}, t.findings.map((f) => h("li", { text: f.text })))));
+      } else if (t.needs_attention) {
+        card.append(h("p", { class: "muted", text: "פחות מ-" + ev.min_hit_rate_pct + "% מהאיתותים זזו מספיק, ועדיין אין מסנן בודד שמסביר זאת." }));
+      }
+      out.push(card);
+    }
+  }
   out.push(h("h2", { text: "עסקאות אחרונות" }));
   for (const t of sb.recent || []) {
     const closed = t.status !== "open";
@@ -250,7 +352,7 @@ function histTab() {
       h("span", { class: "muted", text: String(run.rows.length) + " מניות" })),
       h("div", { class: "detail" }, run.rows.map((r) => h("div", { class: "mini" },
         h("div", {}, h("span", { class: "tick", text: symShown(r) }), ...(r.indices || []).map((i) => h("span", { class: "tag idx-" + i, text: LABELS[i] || i }))),
-        h("span", { class: "muted", text: (DATA.tiers.find((t) => t.id === r.tier) || {}).name + " · " + Math.round(r.score) })))));
+        h("span", { class: "muted", text: (DATA.tiers.find((t) => t.id === r.tier) || {}).name + " · " + Math.floor(r.score + 1e-9) })))));
     return card;
   });
 }

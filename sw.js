@@ -1,5 +1,5 @@
 // Offline copy: the page shell is cached, the data file is fetched fresh and the last copy is the fallback.
-const SHELL = "scanner-shell-v1";
+const SHELL = "scanner-shell-v2";
 const FILES = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png"];
 self.addEventListener("install", (e) => { e.waitUntil(caches.open(SHELL).then((c) => c.addAll(FILES)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", (e) => { e.waitUntil(self.clients.claim()); });
