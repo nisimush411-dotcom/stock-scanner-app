@@ -47,6 +47,7 @@ a.btn { display:block; text-align:center; background:#fff; color:var(--brand); b
 .chart { width:100%; height:auto; display:block; margin:6px 0 2px; }
 .chart { direction:ltr; }
 .chart text { font-size:10px; fill:var(--ink2); }
+.tvbtn { display:block; text-align:center; margin:8px 0 10px; text-decoration:none; font-weight:700; }
 .facts { display:grid; grid-template-columns:1fr 1fr; gap:2px 14px; margin:6px 0; }
 .facts .kv { border-bottom:1px solid var(--line); }
 .flist .f { display:flex; gap:8px; padding:5px 0; border-bottom:1px solid var(--line); font-size:.86rem; }
@@ -155,6 +156,12 @@ const fmtBig = (v) => { if (v == null) return "—"; const a = Math.abs(v); retu
 const pct = (v) => (v == null ? "—" : (v >= 0 ? "+" : "") + fmt(v, 1) + "%");
 const NS = "http://www.w3.org/2000/svg";
 function svg(tag, attrs, text) { const el = document.createElementNS(NS, tag); for (const [k, v] of Object.entries(attrs || {})) el.setAttribute(k, v); if (text != null) el.textContent = text; return el; }
+// The chart app the trading is done in, with the exact symbol of the right exchange.
+function tvLink(r) {
+  const s = r.market === "TA" ? "TASE:" + String(r.symbol).replace(/\.TA$/, "").replace("-", ".") : r.symbol;
+  return "https://www.tradingview.com/chart/?symbol=" + encodeURIComponent(s);
+}
+
 function chartSvg(c) {
   const closes = (c && c.closes) || [];
   if (closes.length < 3) return null;
@@ -252,6 +259,8 @@ function stockCard(r) {
   const plan = r.plan;
   const detail = h("div", { class: "detail" },
     ((r.caution && r.caution.length) || r.demoted_from) ? h("div", { class: "caution" }, h("b", { text: "שים לב" }), h("ul", {}, (r.demoted_from ? [{ text: "הורדה דרגה כי השוק כולו חלש כרגע." }] : []).concat(r.caution || []).map((c) => h("li", { text: c.text || String(c) })))) : null,
+    h("a", { class: "btn tvbtn", href: tvLink(r), target: "_blank", rel: "noopener",
+             text: "↗ פתח את " + r.symbol + " ב-TradingView" }),
     plan ? [kv("כניסה", fmt(plan.entry)), kv("סטופ", fmt(plan.stop) + " (" + fmt(plan.risk_pct, 1) + "%)", "neg"),
             kv("יעד", fmt(plan.target) + " (+" + fmt(plan.reward_pct, 1) + "%)", "pos"),
             kv("גודל פוזיציה מומלץ", plan.size_pct != null ? fmt(plan.size_pct, 0) + "% מההון" : "—")] : null,
